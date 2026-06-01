@@ -1,0 +1,251 @@
+import random
+import time
+import os
+
+# ============================================
+# RPG EXTREMO - VERSION COMPLETA
+# ============================================
+
+class Personaje:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.vida = 100
+        self.vida_max = 100
+        self.ataque = 15
+        self.defensa = 5
+        self.nivel = 1
+        self.exp = 0
+        self.oro = 50
+        self.inventario = ["Pocion"]
+
+    def mostrar_estado(self):
+        print("\n==========================")
+        print(f"Jugador: {self.nombre}")
+        print(f"Nivel: {self.nivel}")
+        print(f"Vida: {self.vida}/{self.vida_max}")
+        print(f"Ataque: {self.ataque}")
+        print(f"Defensa: {self.defensa}")
+        print(f"EXP: {self.exp}")
+        print(f"Oro: {self.oro}")
+        print(f"Inventario: {self.inventario}")
+        print("==========================\n")
+
+    def atacar(self, enemigo):
+        daño = random.randint(self.ataque - 3, self.ataque + 5)
+        daño_real = max(0, daño - enemigo.defensa)
+        enemigo.vida -= daño_real
+        print(f"{self.nombre} hace {daño_real} de daño a {enemigo.nombre}")
+
+    def usar_pocion(self):
+        if "Pocion" in self.inventario:
+            cura = 30
+            self.vida += cura
+            if self.vida > self.vida_max:
+                self.vida = self.vida_max
+            self.inventario.remove("Pocion")
+            print(f"{self.nombre} recuperó {cura} de vida.")
+        else:
+            print("No tienes pociones.")
+
+    def subir_nivel(self):
+        while self.exp >= self.nivel * 50:
+            self.exp -= self.nivel * 50
+            self.nivel += 1
+            self.vida_max += 20
+            self.vida = self.vida_max
+            self.ataque += 5
+            self.defensa += 2
+            print(f"\n¡{self.nombre} subió al nivel {self.nivel}!")
+            print("Tus estadísticas aumentaron.\n")
+
+class Enemigo:
+    def __init__(self, nombre, vida, ataque, defensa, oro, exp):
+        self.nombre = nombre
+        self.vida = vida
+        self.ataque = ataque
+        self.defensa = defensa
+        self.oro = oro
+        self.exp = exp
+
+    def atacar(self, jugador):
+        daño = random.randint(self.ataque - 2, self.ataque + 3)
+        daño_real = max(0, daño - jugador.defensa)
+        jugador.vida -= daño_real
+        print(f"{self.nombre} golpea a {jugador.nombre} por {daño_real} de daño.")
+
+def limpiar():
+    os.system("cls" if os.name == "nt" else "clear")
+
+def pausa():
+    input("\nPresiona ENTER para continuar...")
+
+def generar_enemigo(nivel):
+    nombres = ["Goblin", "Esqueleto", "Orco", "Bandido", "Demonio"]
+    nombre = random.choice(nombres)
+
+    vida = 50 + nivel * 10
+    ataque = 10 + nivel * 3
+    defensa = 3 + nivel
+    oro = random.randint(15, 40)
+    exp = random.randint(20, 50)
+
+    return Enemigo(nombre, vida, ataque, defensa, oro, exp)
+
+def combate(jugador, enemigo):
+    print(f"\n¡Un {enemigo.nombre} salvaje apareció!\n")
+
+    while enemigo.vida > 0 and jugador.vida > 0:
+        print(f"{jugador.nombre}: {jugador.vida} HP")
+        print(f"{enemigo.nombre}: {enemigo.vida} HP")
+
+        print("\n1. Atacar")
+        print("2. Usar poción")
+        print("3. Huir")
+
+        opcion = input("> ")
+
+        if opcion == "1":
+            jugador.atacar(enemigo)
+
+        elif opcion == "2":
+            jugador.usar_pocion()
+
+        elif opcion == "3":
+            if random.randint(1, 100) <= 50:
+                print("¡Escapaste!")
+                return
+            else:
+                print("No pudiste escapar.")
+
+        else:
+            print("Opción inválida.")
+            continue
+
+        if enemigo.vida > 0:
+            enemigo.atacar(jugador)
+
+        time.sleep(1)
+
+    if jugador.vida <= 0:
+        print("\nHas sido derrotado...")
+        return "derrota"
+
+    print(f"\n¡Venciste al {enemigo.nombre}!")
+    jugador.oro += enemigo.oro
+    jugador.exp += enemigo.exp
+
+    print(f"Ganas {enemigo.oro} de oro.")
+    print(f"Ganas {enemigo.exp} EXP.")
+
+    jugador.subir_nivel()
+
+def tienda(jugador):
+    while True:
+        limpiar()
+
+        print("===== TIENDA =====")
+        print(f"Oro disponible: {jugador.oro}")
+        print("1. Comprar poción (20 oro)")
+        print("2. Mejorar ataque (+3) (50 oro)")
+        print("3. Mejorar defensa (+2) (50 oro)")
+        print("4. Salir")
+
+        opcion = input("> ")
+
+        if opcion == "1":
+            if jugador.oro >= 20:
+                jugador.oro -= 20
+                jugador.inventario.append("Pocion")
+                print("Compraste una poción.")
+            else:
+                print("No tienes suficiente oro.")
+
+        elif opcion == "2":
+            if jugador.oro >= 50:
+                jugador.oro -= 50
+                jugador.ataque += 3
+                print("Ataque mejorado.")
+            else:
+                print("No tienes suficiente oro.")
+
+        elif opcion == "3":
+            if jugador.oro >= 50:
+                jugador.oro -= 50
+                jugador.defensa += 2
+                print("Defensa mejorada.")
+            else:
+                print("No tienes suficiente oro.")
+
+        elif opcion == "4":
+            break
+
+        else:
+            print("Opción inválida.")
+
+        pausa()
+
+def intro():
+    limpiar()
+    print("""
+██████╗ ██████╗  ██████╗
+██╔══██╗██╔══██╗██╔════╝
+██████╔╝██████╔╝██║  ███╗
+██╔══██╗██╔═══╝ ██║   ██║
+██║  ██║██║     ╚██████╔╝
+╚═╝  ╚═╝╚═╝      ╚═════╝
+
+RPG EXTREMO
+""")
+
+def menu():
+    print("1. Explorar")
+    print("2. Ver estado")
+    print("3. Tienda")
+    print("4. Salir")
+
+def juego():
+    intro()
+
+    nombre = input("Ingresa tu nombre: ")
+    jugador = Personaje(nombre)
+
+    while True:
+        if jugador.vida <= 0:
+            print("GAME OVER")
+            break
+
+        menu()
+
+        opcion = input("> ")
+
+        if opcion == "1":
+            enemigo = generar_enemigo(jugador.nivel)
+            resultado = combate(jugador, enemigo)
+
+            if resultado == "derrota":
+                break
+
+            pausa()
+
+        elif opcion == "2":
+            jugador.mostrar_estado()
+            pausa()
+
+        elif opcion == "3":
+            tienda(jugador)
+
+        elif opcion == "4":
+            print("Gracias por jugar.")
+            break
+
+        else:
+            print("Opción inválida.")
+            pausa()
+
+        limpiar()
+
+# ============================================
+# INICIAR JUEGO
+# ============================================
+
+juego()  
