@@ -45,7 +45,7 @@ label_password = tk.Label(
     ventana,
     text="Contraseña",
     font=("Arial", 14),
-    bg="#f0f0f0"
+    bg="#64776e"
 )
 label_password.pack()
 
@@ -62,7 +62,7 @@ def login():
     usuario = entrada_usuario.get()
     password = entrada_password.get()
 
-    if usuario == "admin" and password == "1234":
+    if usuario == "rapi" and password == "1234":
         resultado.config(text="Login correcto", fg="green")
     else:
         resultado.config(text="Usuario o contraseña incorrectos", fg="red")
@@ -84,7 +84,7 @@ resultado = tk.Label(
     ventana,
     text="",
     font=("Arial", 12),
-    bg="#f0f0f0"
+    bg="#f5eded"
 )
 resultado.pack()
 
@@ -92,3 +92,5 @@ resultado.pack()
 ventana.mainloop()
 
 
+# Cargar imagen
+imagen = Image.open("tokems.jpg")
